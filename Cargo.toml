@@ -1,0 +1,11 @@
+[package]
+name = "unix-fifo-async"
+version = "0.0.1"
+authors = ["Follpvosten <wolfi@karpador.xyz>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = "0.99"
+nix = "0.15"
