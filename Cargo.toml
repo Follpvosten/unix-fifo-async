@@ -1,6 +1,6 @@
 [package]
 name = "unix-fifo-async"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Follpvosten <wolfi@karpador.xyz>"]
 edition = "2018"
 

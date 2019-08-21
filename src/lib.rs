@@ -10,37 +10,40 @@
 //!
 //! ```
 //! # #![feature(async_await)]
-//! # fn main() { async_std::task::block_on(async {
+//! # fn main() -> async_std::io::Result<()> { async_std::task::block_on(async {
 //! #
-//! use unix_fifo_async::NamedPipe;
+//! use unix_fifo_async::NamedPipePath;
 //! use async_std::task;
 //!
 //! // Create a new pipe at the given path
-//! let read_pipe = NamedPipe::create_new("./my_pipe".into()).unwrap();
-//! // Clone the pipe
-//! let write_pipe = read_pipe.clone();
+//! let pipe = NamedPipePath::new("./my_pipe");
+//! // This creates the path if it doesn't exist; it may return a nix::Error
+//! pipe.ensure_exists().unwrap();
+//! // Create a writer and a reader on the path
+//! let writer = pipe.open_write().await?;
+//! let reader = pipe.open_read().await?;
 //!
 //! // Some data we can send over the pipe
 //! let data_to_send = "Hello, pipes!";
 //!
 //! // Spawn two tasks, one for writing to and one for reading from the pipe.
-//! let t1 = task::spawn(async move { write_pipe.write_str(data_to_send).await });
-//! let t2 = task::spawn(async move { read_pipe.read_string().await });
+//! let t1 = task::spawn(async move { writer.write_str(data_to_send).await });
+//! let t2 = task::spawn(async move { reader.read_string().await });
 //!
 //! // `.await` both tasks and compare the result with the original
 //! t1.await.unwrap();
 //! let read_result = t2.await.unwrap();
 //! assert_eq!(read_result, data_to_send);
 //!
-//! // Delete the pipe we don't need anymore
-//! unix_fifo_async::remove_pipe("./my_pipe").await.unwrap();
-//! #
+//! // Delete the pipe
+//! pipe.delete().await?;
+//! # Ok(())
 //! # })}
 //! ```
 #![feature(async_await)]
 
 mod named_pipe;
-mod util;
 
-pub use named_pipe::NamedPipe;
+pub mod util;
+pub use named_pipe::{NamedPipePath, NamedPipeReader, NamedPipeWriter};
 pub use util::{create_pipe, remove_pipe};
