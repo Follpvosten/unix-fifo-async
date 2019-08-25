@@ -9,3 +9,6 @@ edition = "2018"
 [dependencies]
 async-std = "0.99"
 nix = "0.15"
+
+[badges]
+travis-ci = { repository = "Follpvosten/unix-fifo-async" }
