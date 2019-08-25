@@ -1,8 +1,8 @@
-//! Enables working with Unix named pipes (FIFOs) anywhere on the filesystem.
+//! Eases working with Unix named pipes (FIFOs) anywhere on the filesystem.
 //!
-//! It's important to note that currently, no locks on files are kept - the
-//! `NamedPipe` struct only keeps the path in memory, the file could be
-//! deleted at any point in time.
+//! Because of the way this works currently, there's no real way to get a
+//! lock on the pipe, but there are convenience methods on both `NamedPipePath`
+//! and `NamedPipeReader`/`NamedPipeWriter` to ensure the pipe exists.
 //!
 //! # Example code
 //!
@@ -29,8 +29,6 @@
 //! let data_to_send = "Hello, pipes!";
 //!
 //! // Spawn two tasks, one for writing to and one for reading from the pipe.
-//! // Note that in practice, you'll probably want to read the pipe from a
-//! // different process or a different program entirely.
 //! let t1 = task::spawn(async move { writer.write_str(data_to_send).await });
 //! let t2 = task::spawn(async move { reader.read_string().await });
 //!
@@ -44,6 +42,9 @@
 //! # Ok(())
 //! # })}
 //! ```
+//!
+//! Note that in practice, you'll probably want to read the pipe from a different
+//! process or have it read by an entirely different program.
 
 mod named_pipe;
 
