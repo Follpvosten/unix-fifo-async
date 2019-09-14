@@ -2,6 +2,10 @@
 name = "unix-fifo-async"
 version = "0.0.3"
 authors = ["Follpvosten <wolfi@karpador.xyz>"]
+license = "MIT"
+description = "Async wrapper for working with Unix named pipes (FIFOs)"
+homepage = "https://github.com/Follpvosten/unix-fifo-async"
+repository = "https://github.com/Follpvosten/unix-fifo-async"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

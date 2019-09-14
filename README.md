@@ -1,3 +1,4 @@
+[![Crates.io](https://img.shields.io/crates/v/unix-fifo-async.svg)](https://crates.io/crates/unix-fifo-async)
 [![Build Status](https://travis-ci.org/Follpvosten/unix-fifo-async.svg?branch=master)](https://travis-ci.org/Follpvosten/unix-fifo-async)
 
 # unix-fifo-async
@@ -13,7 +14,7 @@ and `NamedPipeReader`/`NamedPipeWriter` to ensure the pipe exists.
 Create a pipe, write to it in one async task and read from it in another:
 
 ```rust
-#
+
 use unix_fifo_async::NamedPipePath;
 use async_std::task;
 

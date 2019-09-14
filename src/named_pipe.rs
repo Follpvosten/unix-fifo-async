@@ -81,6 +81,15 @@ pub struct NamedPipeWriter {
 }
 
 impl NamedPipeWriter {
+    async fn _write(&self, data: &[u8]) -> io::Result<()> {
+        use async_std::io::Write;
+        let mut file = async_std::fs::OpenOptions::new()
+            .write(true)
+            .create(false)
+            .open(&self.path.inner)
+            .await?;
+        file.write_all(data).await
+    }
     pub fn from_path(source: &NamedPipePath) -> Self {
         Self {
             path: source.clone(),
@@ -94,20 +103,20 @@ impl NamedPipeWriter {
     /// Writes byte data to the pipe.
     /// The returned Future will resolve when the bytes are read from the pipe.
     pub async fn write(&self, data: &[u8]) -> io::Result<()> {
-        fs::write(&self.path.inner, data).await
+        self._write(data).await
     }
     /// Writes &str data to the pipe.
     /// The returned Future will resolve when the string is read from the pipe.
     pub async fn write_str(&self, data: &str) -> io::Result<()> {
-        fs::write(&self.path.inner, data).await
+        self._write(data.as_bytes()).await
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use async_std::task::{self, block_on};
+    use async_std::{task::{self, block_on}, io};
     #[test]
-    fn write_and_read_threaded() {
+    fn write_and_read_threaded() -> io::Result<()> {
         use std::thread;
         let pipe = super::NamedPipePath::new("./test_pipe_3");
         pipe.ensure_exists().unwrap();
@@ -116,13 +125,13 @@ mod tests {
         let data_to_send = "Hello pipe";
         let t_write = thread::spawn(move || block_on(writer.write_str(data_to_send)));
         let t_read = thread::spawn(move || block_on(reader.read_string()));
-        t_write.join().unwrap().unwrap();
-        let read_result = t_read.join().unwrap().unwrap();
+        t_write.join().unwrap()?;
+        let read_result = t_read.join().unwrap()?;
         assert_eq!(read_result, data_to_send);
-        block_on(pipe.delete()).unwrap();
+        block_on(pipe.delete())
     }
     #[test]
-    fn write_and_read_async() {
+    fn write_and_read_async() -> io::Result<()> {
         block_on(async {
             let pipe = super::NamedPipePath::new("./test_pipe_4");
             pipe.ensure_exists().unwrap();
@@ -131,16 +140,17 @@ mod tests {
             let data_to_send = "Hello pipe";
             let t1 = task::spawn(async move { writer.write_str(data_to_send).await });
             let t2 = task::spawn(async move { reader.read_string().await });
-            t1.await.unwrap();
-            let read_result = t2.await.unwrap();
+            t1.await?;
+            let read_result = t2.await?;
             assert_eq!(read_result, data_to_send);
-            pipe.delete().await.unwrap();
-        });
+            pipe.delete().await
+        })
     }
     #[test]
-    fn ensure_on_write() {
+    fn ensure_on_write() -> io::Result<()> {
         block_on(async {
             let pipe = super::NamedPipePath::new("./test_pipe_5");
+            pipe.ensure_exists().unwrap();
             let writer = pipe.open_write();
             let reader = pipe.open_read();
             let data_to_send = "Hello pipe";
@@ -152,16 +162,17 @@ mod tests {
                     .await
             });
             let t2 = task::spawn(async move { reader.read_string().await });
-            t1.await.unwrap();
-            let read_result = t2.await.unwrap();
+            t1.await?;
+            let read_result = t2.await?;
             assert_eq!(read_result, data_to_send);
-            pipe.delete().await.unwrap();
-        });
+            pipe.delete().await
+        })
     }
     #[test]
-    fn ensure_on_read() {
+    fn ensure_on_read() -> io::Result<()> {
         block_on(async {
             let pipe = super::NamedPipePath::new("./test_pipe_6");
+            pipe.ensure_exists().unwrap();
             let writer = pipe.open_write();
             let reader = pipe.open_read();
             let data_to_send = "Hello pipe";
@@ -170,10 +181,10 @@ mod tests {
                 task::spawn(
                     async move { reader.ensure_pipe_exists().unwrap().read_string().await },
                 );
-            t1.await.unwrap();
-            let read_result = t2.await.unwrap();
+            t1.await?;
+            let read_result = t2.await?;
             assert_eq!(read_result, data_to_send);
-            pipe.delete().await.unwrap();
-        });
+            pipe.delete().await
+        })
     }
 }

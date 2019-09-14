@@ -4,7 +4,7 @@ use std::path::Path;
 
 /// Attempt to create a new Unix named pipe/FIFO on disk.
 pub fn create_pipe<P: ?Sized + NixPath>(path: &P, mode: Option<Mode>) -> nix::Result<()> {
-    nix::unistd::mkfifo(path, mode.unwrap_or(Mode::from_bits_truncate(0o660)))
+    nix::unistd::mkfifo(path, mode.unwrap_or_else(|| Mode::from_bits_truncate(0o660)))
 }
 
 /// Attempt to delete a Unix named pipe/FIFO from disk.
@@ -25,7 +25,7 @@ mod tests {
     fn permissions() {
         use nix::sys::stat::{self, Mode};
         let path = std::path::Path::new("./test_pipe_2");
-        let assert_stats_eq = |input: Option<Mode>| {
+        let assert_stats_eq = |input| {
             super::create_pipe(path, input).expect("Failed to create pipe");
             let file_stat = stat::stat(path).expect("Failed to get file stat");
             let mode = Mode::from_bits_truncate(file_stat.st_mode);

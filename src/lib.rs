@@ -11,7 +11,7 @@ Create a pipe, write to it in one async task and read from it in another:
 
 ```
 # fn main() -> async_std::io::Result<()> { async_std::task::block_on(async {
-#
+
 use unix_fifo_async::NamedPipePath;
 use async_std::task;
 

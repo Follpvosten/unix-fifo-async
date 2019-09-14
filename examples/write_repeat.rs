@@ -13,7 +13,7 @@ use unix_fifo_async::NamedPipePath;
 fn main() -> io::Result<()> {
     let text = std::env::args()
         .nth(1)
-        .unwrap_or("Hello world!".to_string())
+        .unwrap_or_else(|| "Hello world!".to_string())
         + "\n";
     println!("Writing String: {}", &text);
     task::block_on(async move {
